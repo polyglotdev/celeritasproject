@@ -11,21 +11,21 @@ func Maths(operation string, numbers ...int) int {
 	// Add subtract, multiply, divide, modulus operations
 	switch operation {
 	case "add":
-		return add(numbers...)
+		return Add(numbers...)
 	case "subtract":
-		return subtract(numbers...)
+		return Subtract(numbers...)
 	case "multiply":
-		return multiply(numbers...)
+		return Multiply(numbers...)
 	case "divide":
-		return divide(numbers...)
+		`return Divide(numbers...)
 	case "modulus":
-		return modulus(numbers...)
+		return Modulus(numbers...)
 	}
 	return 0
 }
 
-// add takes in an arbitrary number of integers and returns the sum
-func add(numbers ...int) int {
+// Add takes in an arbitrary number of integers and returns the sum
+func Add(numbers ...int) int {
 	sum := 0
 	for _, number := range numbers {
 		sum += number
@@ -33,8 +33,8 @@ func add(numbers ...int) int {
 	return sum
 }
 
-// subtract takes in an arbitrary number of integers and returns the difference
-func subtract(numbers ...int) int {
+// Subtract takes in an arbitrary number of integers and returns the difference
+func Subtract(numbers ...int) int {
 	difference := 0
 	for _, number := range numbers {
 		difference -= number
@@ -42,8 +42,8 @@ func subtract(numbers ...int) int {
 	return difference
 }
 
-// multiply takes in an arbitrary number of integers and returns the product
-func multiply(numbers ...int) int {
+// Multiply takes in an arbitrary number of integers and returns the product
+func Multiply(numbers ...int) int {
 	product := 1
 	for _, number := range numbers {
 		product *= number
@@ -51,8 +51,8 @@ func multiply(numbers ...int) int {
 	return product
 }
 
-// divide takes in an arbitrary number of integers and returns the quotient
-func divide(numbers ...int) int {
+// Divide takes in an arbitrary number of integers and returns the quotient
+func Divide(numbers ...int) int {
 	quotient := 1
 	for _, number := range numbers {
 		quotient /= number
@@ -60,8 +60,8 @@ func divide(numbers ...int) int {
 	return quotient
 }
 
-// modulus takes in an arbitrary number of integers and returns the remainder
-func modulus(numbers ...int) int {
+// Modulus takes in an arbitrary number of integers and returns the remainder
+func Modulus(numbers ...int) int {
 	remainder := 0
 	for _, number := range numbers {
 		remainder %= number
