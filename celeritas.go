@@ -1,5 +1,7 @@
 package celeritas
 
+import "fmt"
+
 // TestFunc is a test function
 func TestFunc(a, b int) int {
 	return a + b
@@ -67,4 +69,29 @@ func Modulus(numbers ...int) int {
 		remainder %= number
 	}
 	return remainder
+}
+
+const (
+	English = "english"
+	Spanish = "spanish"
+	French  = "french"
+	German  = "german"
+	Italian = "italian"
+)
+
+// SayHello takes in a name and a language and returns a greeting
+func SayHello(name, language string) string {
+	switch language {
+	case English:
+		return fmt.Sprintf("Hello, %s!", name)
+	case Spanish:
+		return fmt.Sprintf("Hola, %s!", name)
+	case French:
+		return fmt.Sprintf("Bonjour, %s!", name)
+	case German:
+		return fmt.Sprintf("Hallo, %s!", name)
+	case Italian:
+		return fmt.Sprintf("Ciao, %s!", name)
+	}
+	return fmt.Sprintf("Hello, %s!", name)
 }
