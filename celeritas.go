@@ -17,7 +17,7 @@ func Maths(operation string, numbers ...int) int {
 	case "multiply":
 		return Multiply(numbers...)
 	case "divide":
-		`return Divide(numbers...)
+		return Divide(numbers...)
 	case "modulus":
 		return Modulus(numbers...)
 	}
