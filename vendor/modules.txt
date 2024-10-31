@@ -1,0 +1,4 @@
+# github.com/songgao/colorgo v0.0.0-20161028043718-1e1a5b5cef5c
+## explicit
+# github.com/songgao/go.pipeline v0.0.0-20220429045509-ad6449c973e2
+## explicit; go 1.18
