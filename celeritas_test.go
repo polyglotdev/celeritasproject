@@ -1,9 +1,16 @@
 package celeritas
 
 import (
+	"bytes"
+	"io"
+	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
+	"time"
+
+	"github.com/go-chi/chi/v5"
 )
 
 func TestCeleritas_New(t *testing.T) {
@@ -49,7 +56,8 @@ func TestCeleritas_New(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(ts *testing.T) {
+		testCase := tt // Better name that describes the variable's purpose
+		t.Run(testCase.name, func(ts *testing.T) {
 			// Set up environment variables for this test
 			if tt.envVars != nil {
 				for k, v := range tt.envVars {
@@ -100,8 +108,9 @@ func TestCeleritas_New(t *testing.T) {
 				}
 
 				for _, tst := range appSettingsTests {
-					if tst.got != tst.want {
-						ts.Errorf("%s: got %v, want %v", tst.errMsg, tst.got, tst.want)
+					testSetting := tst // Better name that describes the variable's purpose
+					if testSetting.got != testSetting.want {
+						ts.Errorf("%s: got %v, want %v", testSetting.errMsg, testSetting.got, testSetting.want)
 					}
 				}
 
@@ -121,6 +130,97 @@ func TestCeleritas_New(t *testing.T) {
 						ts.Fatal(err)
 					}
 				}
+			}
+		})
+	}
+}
+
+func TestCeleritas_ListenAndServe(t *testing.T) {
+	var logBuffer bytes.Buffer
+
+	tests := []struct {
+		name          string
+		setup         func(*Celeritas)
+		wantPort      string
+		wantLogMsg    string
+		wantErr       bool
+		checkTimeouts bool
+	}{
+		{
+			name: "valid port configuration",
+			setup: func(c *Celeritas) {
+				c.AppName = "test_app"
+				c.config.port = "0"
+				c.InfoLog = log.New(&logBuffer, "INFO\t", log.Ldate|log.Ltime)
+				c.ErrorLog = log.New(io.Discard, "", 0)
+				c.Routes = chi.NewRouter()
+			},
+			wantPort:      "0",
+			wantLogMsg:    "Starting test_app on port 0",
+			wantErr:       false,
+			checkTimeouts: true,
+		},
+		{
+			name: "missing port configuration",
+			setup: func(c *Celeritas) {
+				c.AppName = "test_app"
+				c.config.port = ""
+				c.InfoLog = log.New(&logBuffer, "INFO\t", log.Ldate|log.Ltime)
+				c.ErrorLog = log.New(io.Discard, "", 0)
+				c.Routes = chi.NewRouter()
+			},
+			wantPort:   "",
+			wantLogMsg: "",
+			wantErr:    true,
+		},
+	}
+
+	for _, tt := range tests {
+		testCase := tt
+		t.Run(testCase.name, func(ts *testing.T) {
+			logBuffer.Reset()
+			c := &Celeritas{}
+			testCase.setup(c)
+
+			// Test the actual ListenAndServe method
+			errChan := make(chan error, 1)
+			go func() {
+				errChan <- c.ListenAndServe()
+			}()
+
+			// Give the server a moment to start
+			time.Sleep(100 * time.Millisecond)
+
+			// Check for errors
+			select {
+			case err := <-errChan:
+				if !testCase.wantErr && err != nil {
+					ts.Errorf("ListenAndServe() unexpected error: %v", err)
+				}
+				if testCase.wantErr && err == nil {
+					ts.Error("ListenAndServe() expected error but got none")
+				}
+			default:
+				if testCase.wantErr {
+					ts.Error("ListenAndServe() expected error but got none")
+				}
+			}
+
+			// Verify log message
+			if testCase.wantLogMsg != "" {
+				logMsg := strings.TrimSpace(logBuffer.String())
+				if !strings.Contains(logMsg, testCase.wantLogMsg) {
+					ts.Errorf("Log message incorrect\nwant: %q\ngot: %q",
+						testCase.wantLogMsg,
+						logMsg)
+				}
+			}
+
+			// Verify port configuration
+			if c.config.port != testCase.wantPort {
+				ts.Errorf("Port configuration incorrect\nwant: %q\ngot: %q",
+					testCase.wantPort,
+					c.config.port)
 			}
 		})
 	}

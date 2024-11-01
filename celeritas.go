@@ -103,6 +103,36 @@ func (c *Celeritas) checkDotEnv(p string) error {
 	return nil
 }
 
+// createServer creates and configures an HTTP server with the application settings.
+// It returns the configured server and an error if configuration fails.
+//
+// The server is configured with:
+//   - Port from application config
+//   - Application error logger
+//   - Chi router as handler
+//   - Idle timeout of 30 seconds
+//   - Read timeout of 30 seconds
+//   - Write timeout of 600 seconds
+//
+// If the port is not configured (empty), createServer returns an error.
+func (c *Celeritas) createServer() (*http.Server, error) {
+	if c.config.port == "" {
+		return nil, fmt.Errorf("port cannot be empty")
+	}
+
+	srv := &http.Server{
+		Addr:         fmt.Sprintf(":%s", c.config.port),
+		ErrorLog:     c.ErrorLog,
+		Handler:      c.routes(),
+		IdleTimeout:  30 * time.Second,
+		ReadTimeout:  30 * time.Second,
+		WriteTimeout: 600 * time.Second,
+	}
+
+	c.InfoLog.Printf("Starting %s on port %s", c.AppName, c.config.port)
+	return srv, nil
+}
+
 // ListenAndServe starts and runs the HTTP server until it encounters an error.
 // It configures the server with:
 //
@@ -113,20 +143,12 @@ func (c *Celeritas) checkDotEnv(p string) error {
 // The server listens on the port specified in the application config.
 // If the server encounters an error during startup or operation, it logs
 // the error and terminates the application.
-func (c *Celeritas) ListenAndServe() {
-	srv := &http.Server{
-		Addr:         fmt.Sprintf(":%s", os.Getenv("PORT")),
-		ErrorLog:     c.ErrorLog,
-		Handler:      c.routes(),
-		IdleTimeout:  30 * time.Second,
-		ReadTimeout:  30 * time.Second,
-		WriteTimeout: 600 * time.Second,
+func (c *Celeritas) ListenAndServe() error {
+	srv, err := c.createServer()
+	if err != nil {
+		return err
 	}
-
-	c.InfoLog.Printf("Starting %s on port %s", c.AppName, c.config.port)
-	if err := srv.ListenAndServe(); err != nil {
-		c.ErrorLog.Fatal(err)
-	}
+	return srv.ListenAndServe()
 }
 
 // StartLoggers initializes the application's logging system with two loggers:
