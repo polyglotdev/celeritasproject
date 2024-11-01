@@ -89,7 +89,7 @@ func TestRender_Page(t *testing.T) {
 
 	for _, test := range tests {
 		testCase := test // Capture range variable
-		t.Run(testCase.name, func(t *testing.T) {
+		t.Run(testCase.name, func(tg *testing.T) {
 			c := testCase.setupFunc()
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest("GET", "/", nil)
@@ -183,7 +183,7 @@ func TestRender_GoPage(t *testing.T) {
 
 	for _, test := range tests {
 		testCase := test // Capture range variable
-		t.Run(testCase.name, func(t *testing.T) {
+		t.Run(testCase.name, func(tg *testing.T) {
 			c := testCase.setupFunc()
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest("GET", "/", nil)
@@ -308,7 +308,7 @@ func TestRender_JetPage(t *testing.T) {
 
 	for _, test := range tests {
 		testCase := test // Capture range variable
-		t.Run(testCase.name, func(t *testing.T) {
+		t.Run(testCase.name, func(tg *testing.T) {
 			c := testCase.setupFunc()
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest("GET", "/", nil)
