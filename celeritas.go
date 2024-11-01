@@ -18,16 +18,30 @@ const (
 	Version = "1.0.0"
 )
 
-// Celeritas is the main application struct
+// Celeritas represents the core application framework, providing essential services
+// for web applications including routing, logging, and configuration management.
+// It coordinates all the main components needed to run a web server.
+//
+// The zero value is not usable. Use New to create a new Celeritas instance.
+//
+// A Celeritas instance manages:
+//   - Application identification and versioning
+//   - Debug mode configuration
+//   - Structured logging (info and error levels)
+//   - File system organization via RootPath
+//   - HTTP routing with Chi router
+//   - Server configuration (ports, rendering options)
+//
+// Celeritas is safe for use by a single goroutine at a time.
 type Celeritas struct {
-	AppName  string
-	Debug    bool
-	Version  string
-	ErrorLog *log.Logger
-	InfoLog  *log.Logger
-	RootPath string
-	Routes   *chi.Mux
-	config   config
+	AppName  string      // Application name used in logging and identification
+	Debug    bool        // Debug mode flag for detailed logging and error handling
+	Version  string      // Application version for deployment tracking
+	ErrorLog *log.Logger // Structured error logging
+	InfoLog  *log.Logger // Structured information logging
+	RootPath string      // Base directory for application files and folders
+	Routes   *chi.Mux    // HTTP router for handling web requests
+	config   config      // Internal server configuration settings
 }
 
 type config struct {
