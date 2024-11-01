@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/polyglotdev/celeritasproject/render"
 )
 
 func TestCeleritas_New(t *testing.T) {
@@ -95,8 +96,8 @@ func TestCeleritas_New(t *testing.T) {
 				// Test struct field initialization
 				appSettingsTests := []struct {
 					name   string
-					got    interface{}
-					want   interface{}
+					got    any
+					want   any
 					errMsg string
 				}{
 					{"AppName", c.AppName, "celeritas", "AppName not set correctly"},
@@ -105,12 +106,34 @@ func TestCeleritas_New(t *testing.T) {
 					{"RootPath", c.RootPath, tt.rootPath, "RootPath not set correctly"},
 					{"config.port", c.config.port, "8080", "Port not set correctly"},
 					{"config.renderer", c.config.renderer, "go", "Renderer not set correctly"},
+					// Add new test for Renderer initialization
+					{"Renderer", c.Render, &render.Render{
+						Renderer: c.config.renderer,
+						RootPath: c.RootPath,
+						Port:     c.config.port,
+					}, "Renderer not initialized correctly"},
 				}
 
 				for _, tst := range appSettingsTests {
 					testSetting := tst // Better name that describes the variable's purpose
-					if testSetting.got != testSetting.want {
-						ts.Errorf("%s: got %v, want %v", testSetting.errMsg, testSetting.got, testSetting.want)
+					if testSetting.name == "Renderer" {
+						got := testSetting.got.(*render.Render)
+						want := testSetting.want.(*render.Render)
+						if got.Renderer != want.Renderer ||
+							got.RootPath != want.RootPath ||
+							got.Port != want.Port ||
+							got.Secure != want.Secure ||
+							got.ServerName != want.ServerName {
+							ts.Errorf("%s:\ngot:  %+v\nwant: %+v",
+								testSetting.errMsg,
+								got,
+								want)
+						}
+					} else if testSetting.got != testSetting.want {
+						ts.Errorf("%s: got %v, want %v",
+							testSetting.errMsg,
+							testSetting.got,
+							testSetting.want)
 					}
 				}
 
