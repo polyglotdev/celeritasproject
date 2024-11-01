@@ -12,6 +12,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
+	"github.com/polyglotdev/celeritasproject/render"
 )
 
 const (
@@ -34,14 +35,15 @@ const (
 //
 // Celeritas is safe for use by a single goroutine at a time.
 type Celeritas struct {
-	AppName  string      // Application name used in logging and identification
-	Debug    bool        // Debug mode flag for detailed logging and error handling
-	Version  string      // Application version for deployment tracking
-	ErrorLog *log.Logger // Structured error logging
-	InfoLog  *log.Logger // Structured information logging
-	RootPath string      // Base directory for application files and folders
-	Routes   *chi.Mux    // HTTP router for handling web requests
-	config   config      // Internal server configuration settings
+	AppName  string         // Application name used in logging and identification
+	Debug    bool           // Debug mode flag for detailed logging and error handling
+	Version  string         // Application version for deployment tracking
+	ErrorLog *log.Logger    // Structured error logging
+	InfoLog  *log.Logger    // Structured information logging
+	RootPath string         // Base directory for application files and folders
+	Routes   *chi.Mux       // HTTP router for handling web requests
+	config   config         // Internal server configuration settings
+	Renderer *render.Render // Rendering engine
 }
 
 type config struct {
@@ -93,6 +95,8 @@ func (c *Celeritas) New(rootPath string) error {
 		renderer: os.Getenv("RENDERER"),
 	}
 
+	c.Renderer = c.createRenderer(c)
+
 	return nil
 }
 
@@ -137,7 +141,7 @@ func (c *Celeritas) createServer() (*http.Server, error) {
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%s", c.config.port),
 		ErrorLog:     c.ErrorLog,
-		Handler:      c.routes(),
+		Handler:      c.Routes,
 		IdleTimeout:  30 * time.Second,
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 600 * time.Second,
@@ -181,4 +185,12 @@ func (c *Celeritas) StartLoggers() (*log.Logger, *log.Logger) {
 	errorLog = log.New(os.Stdout, errorPrefix, log.Ldate|log.Ltime|log.Lshortfile)
 
 	return infoLog, errorLog
+}
+
+func (c *Celeritas) createRenderer(cel *Celeritas) *render.Render {
+	return &render.Render{
+		Renderer: cel.config.renderer,
+		RootPath: cel.RootPath,
+		Port:     cel.config.port,
+	}
 }
