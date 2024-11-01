@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/CloudyKit/jet/v6"
 	"github.com/fatih/color"
 	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
@@ -32,6 +33,8 @@ const (
 //   - File system organization via RootPath
 //   - HTTP routing with Chi router
 //   - Server configuration (ports, rendering options)
+//   - Jet template engine for rendering views
+//   - Go template engine for rendering views
 //
 // Celeritas is safe for use by a single goroutine at a time.
 type Celeritas struct {
@@ -43,7 +46,8 @@ type Celeritas struct {
 	RootPath string         // Base directory for application files and folders
 	Routes   *chi.Mux       // HTTP router for handling web requests
 	config   config         // Internal server configuration settings
-	Renderer *render.Render // Rendering engine
+	Render   *render.Render // Rendering engine
+	JetViews *jet.Set       // Jet template engine
 }
 
 type config struct {
@@ -95,7 +99,14 @@ func (c *Celeritas) New(rootPath string) error {
 		renderer: os.Getenv("RENDERER"),
 	}
 
-	c.Renderer = c.createRenderer(c)
+	var views = jet.NewSet(
+		jet.NewOSFileSystemLoader(fmt.Sprintf("%s/views", rootPath)),
+		jet.InDevelopmentMode(),
+	)
+
+	c.JetViews = views
+
+	c.createRenderer()
 
 	return nil
 }
@@ -187,10 +198,12 @@ func (c *Celeritas) StartLoggers() (*log.Logger, *log.Logger) {
 	return infoLog, errorLog
 }
 
-func (c *Celeritas) createRenderer(cel *Celeritas) *render.Render {
-	return &render.Render{
-		Renderer: cel.config.renderer,
-		RootPath: cel.RootPath,
-		Port:     cel.config.port,
+func (c *Celeritas) createRenderer() {
+	myRenderer := render.Render{
+		Renderer: c.config.renderer,
+		RootPath: c.RootPath,
+		Port:     c.config.port,
+		JetViews: c.JetViews,
 	}
+	c.Render = &myRenderer
 }
