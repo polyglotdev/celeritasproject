@@ -37,7 +37,7 @@ type config struct {
 
 // New returns a new Celeritas application
 func (c *Celeritas) New(rootPath string) error {
-
+	c.AppName = "celeritas"
 	pathConfig := initPaths{
 		rootPath: rootPath,
 		folderNames: []string{
