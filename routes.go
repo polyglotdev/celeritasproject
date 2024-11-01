@@ -1,7 +1,6 @@
 package celeritas
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -16,14 +15,6 @@ func (c *Celeritas) routes() http.Handler {
 		mux.Use(middleware.Logger)
 	}
 	mux.Use(middleware.Recoverer)
-
-	mux.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		n, err := fmt.Fprint(w, "Welcome to Celeritas")
-		if err != nil {
-			c.ErrorLog.Println(err)
-			c.InfoLog.Printf("Number of bytes written: %d", n)
-		}
-	})
 
 	return mux
 }
