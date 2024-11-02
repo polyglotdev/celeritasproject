@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/CloudyKit/jet/v6"
+	"github.com/alexedwards/scs/v2"
 	"github.com/fatih/color"
 	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
@@ -38,21 +39,24 @@ const (
 //
 // Celeritas is safe for use by a single goroutine at a time.
 type Celeritas struct {
-	AppName  string         // Application name used in logging and identification
-	Debug    bool           // Debug mode flag for detailed logging and error handling
-	Version  string         // Application version for deployment tracking
-	ErrorLog *log.Logger    // Structured error logging
-	InfoLog  *log.Logger    // Structured information logging
-	RootPath string         // Base directory for application files and folders
-	Routes   *chi.Mux       // HTTP router for handling web requests
-	config   config         // Internal server configuration settings
-	Render   *render.Render // Rendering engine
-	JetViews *jet.Set       // Jet template engine
+	AppName  string              // Application name used in logging and identification
+	Debug    bool                // Debug mode flag for detailed logging and error handling
+	Version  string              // Application version for deployment tracking
+	ErrorLog *log.Logger         // Structured error logging
+	InfoLog  *log.Logger         // Structured information logging
+	RootPath string              // Base directory for application files and folders
+	Routes   *chi.Mux            // HTTP router for handling web requests
+	config   config              // Internal server configuration settings
+	Render   *render.Render      // Rendering engine
+	Session  *scs.SessionManager // Session manager
+	JetViews *jet.Set            // Jet template engine
 }
 
 type config struct {
-	port     string
-	renderer string
+	port        string
+	renderer    string
+	cookie      cookieConfig
+	sessionType string
 }
 
 // New returns a new Celeritas application
@@ -97,6 +101,13 @@ func (c *Celeritas) New(rootPath string) error {
 	c.config = config{
 		port:     os.Getenv("PORT"),
 		renderer: os.Getenv("RENDERER"),
+		cookie: cookieConfig{
+			name:     os.Getenv("COOKIE_NAME"),
+			lifetime: os.Getenv("COOKIE_LIFETIME"),
+			persist:  os.Getenv("COOKIE_PERSIST"),
+			secure:   os.Getenv("COOKIE_SECURE"),
+			domain:   os.Getenv("COOKIE_DOMAIN"),
+		},
 	}
 
 	var views = jet.NewSet(
