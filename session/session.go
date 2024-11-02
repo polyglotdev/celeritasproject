@@ -22,13 +22,21 @@ type Session struct {
 func (c *Session) InitSession() *scs.SessionManager {
 	var persist, secure bool
 
+	// how long should sessions last?
 	minutes, err := strconv.Atoi(c.CookieLifetime)
 	if err != nil {
 		minutes = 60
 	}
 
-	persist = strings.ToLower(c.CookiePersist) == "true"
-	secure = strings.ToLower(c.CookieSecure) == "true"
+	// should cookies persist?
+	if strings.ToLower(c.CookiePersist) == "true" {
+		persist = true
+	}
+
+	// must cookies be secure?
+	if strings.ToLower(c.CookieSecure) == "true" {
+		secure = true
+	}
 
 	session := scs.New()
 	session.Lifetime = time.Duration(minutes) * time.Minute
@@ -40,7 +48,11 @@ func (c *Session) InitSession() *scs.SessionManager {
 
 	switch strings.ToLower(c.SessionType) {
 	case "redis":
-		// session.Redis = c.redisConfig()
+
+	case "mysql", "mariadb":
+
+	case "postgres", "postgresql":
+
 	default:
 		// cookie
 	}
