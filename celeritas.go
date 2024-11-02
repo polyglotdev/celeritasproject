@@ -15,6 +15,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
 	"github.com/polyglotdev/celeritasproject/render"
+	"github.com/polyglotdev/celeritasproject/session"
 )
 
 const (
@@ -108,7 +109,18 @@ func (c *Celeritas) New(rootPath string) error {
 			secure:   os.Getenv("COOKIE_SECURE"),
 			domain:   os.Getenv("COOKIE_DOMAIN"),
 		},
+		sessionType: os.Getenv("SESSION_TYPE"),
 	}
+
+	sessionInfo := session.Session{
+		CookieLifetime: c.config.cookie.lifetime,
+		CookiePersist:  c.config.cookie.persist,
+		CookieName:     c.config.cookie.name,
+		CookieDomain:   c.config.cookie.domain,
+		SessionType:    c.config.sessionType,
+	}
+
+	c.Session = sessionInfo.InitSession()
 
 	var views = jet.NewSet(
 		jet.NewOSFileSystemLoader(fmt.Sprintf("%s/views", rootPath)),
