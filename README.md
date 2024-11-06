@@ -1,6 +1,6 @@
 # Celeritas
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/polyglotdev/celeritas.svg)](https://pkg.go.dev/github.com/polyglotdev/celeritas)
+[![Go Reference](https://pkg.go.dev/badge/github.com/polyglotdev/celeritasproject.svg)](https://pkg.go.dev/github.com/polyglotdev/celeritasproject)
 
 This repo and package are for the [Let's Build a Go version of Laravel course on Udemy](https://www.udemy.com/course/lets-build-a-go-version-of-laravel).
 
