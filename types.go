@@ -1,5 +1,7 @@
 package celeritas
 
+import "database/sql"
+
 // initPaths represents the paths and folder names to initialize the application
 type initPaths struct {
 	rootPath    string
@@ -13,4 +15,14 @@ type cookieConfig struct {
 	persist  string
 	secure   string
 	domain   string
+}
+
+type databaseConfig struct {
+	dsn      string
+	database string
+}
+
+type Database struct {
+	DataType string
+	Pool     *sql.DB
 }

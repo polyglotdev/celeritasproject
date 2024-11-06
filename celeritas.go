@@ -50,6 +50,7 @@ type Celeritas struct {
 	config   config              // Internal server configuration settings
 	Render   *render.Render      // Rendering engine
 	Session  *scs.SessionManager // Session manager
+	DB       Database            // Database
 	JetViews *jet.Set            // Jet template engine
 }
 
@@ -58,6 +59,7 @@ type config struct {
 	renderer    string
 	cookie      cookieConfig
 	sessionType string
+	database    databaseConfig
 }
 
 // New returns a new Celeritas application
@@ -99,6 +101,18 @@ func (c *Celeritas) New(rootPath string) error {
 	c.RootPath = rootPath
 	c.Routes = c.routes().(*chi.Mux)
 
+	if os.Getenv("DATABASE_TYPE") != "" {
+		db, err := c.OpenDB(os.Getenv("DATABASE_TYPE"), c.BuildDSN())
+		if err != nil {
+			c.ErrorLog.Println(err)
+			os.Exit(1)
+		}
+		c.DB = Database{
+			DataType: os.Getenv("DATABASE_TYPE"),
+			Pool:     db,
+		}
+	}
+
 	c.config = config{
 		port:     os.Getenv("PORT"),
 		renderer: os.Getenv("RENDERER"),
@@ -110,6 +124,10 @@ func (c *Celeritas) New(rootPath string) error {
 			domain:   os.Getenv("COOKIE_DOMAIN"),
 		},
 		sessionType: os.Getenv("SESSION_TYPE"),
+		database: databaseConfig{
+			database: os.Getenv("DATABASE_TYPE"),
+			dsn:      c.BuildDSN(),
+		},
 	}
 
 	sessionInfo := session.Session{
@@ -200,6 +218,8 @@ func (c *Celeritas) ListenAndServe() error {
 	if err != nil {
 		return err
 	}
+	defer c.DB.Pool.Close()
+
 	return srv.ListenAndServe()
 }
 
@@ -229,4 +249,28 @@ func (c *Celeritas) createRenderer() {
 		JetViews: c.JetViews,
 	}
 	c.Render = &myRenderer
+}
+
+// BuildDSN builds the datasource name for our database, and returns it as a string
+func (c *Celeritas) BuildDSN() string {
+	var dsn string
+
+	switch os.Getenv("DATABASE_TYPE") {
+	case "postgres", "postgresql":
+		dsn = fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=%s timezone=UTC connect_timeout=5",
+			os.Getenv("DATABASE_HOST"),
+			os.Getenv("DATABASE_PORT"),
+			os.Getenv("DATABASE_USER"),
+			os.Getenv("DATABASE_NAME"),
+			os.Getenv("DATABASE_SSL_MODE"))
+
+		if os.Getenv("DATABASE_PASS") != "" {
+			dsn = fmt.Sprintf("%s password=%s", dsn, os.Getenv("DATABASE_PASS"))
+		}
+
+	default:
+
+	}
+
+	return dsn
 }
