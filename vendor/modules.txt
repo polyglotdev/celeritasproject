@@ -17,12 +17,18 @@ github.com/go-chi/chi/v5
 github.com/go-chi/chi/v5/middleware
 # github.com/go-sql-driver/mysql v1.5.0
 ## explicit; go 1.10
+github.com/go-sql-driver/mysql
 # github.com/golang-migrate/migrate/v4 v4.18.1
 ## explicit; go 1.22.0
 github.com/golang-migrate/migrate/v4
 github.com/golang-migrate/migrate/v4/database
+github.com/golang-migrate/migrate/v4/database/multistmt
+github.com/golang-migrate/migrate/v4/database/mysql
+github.com/golang-migrate/migrate/v4/database/postgres
 github.com/golang-migrate/migrate/v4/internal/url
 github.com/golang-migrate/migrate/v4/source
+github.com/golang-migrate/migrate/v4/source/file
+github.com/golang-migrate/migrate/v4/source/iofs
 # github.com/hashicorp/errwrap v1.1.0
 ## explicit
 github.com/hashicorp/errwrap
@@ -62,6 +68,9 @@ github.com/jackc/pgx/v4/stdlib
 github.com/joho/godotenv
 # github.com/lib/pq v1.10.9
 ## explicit; go 1.13
+github.com/lib/pq
+github.com/lib/pq/oid
+github.com/lib/pq/scram
 # github.com/mattn/go-colorable v0.1.13
 ## explicit; go 1.15
 github.com/mattn/go-colorable
