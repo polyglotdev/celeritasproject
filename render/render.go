@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/CloudyKit/jet/v6"
+	"github.com/alexedwards/scs/v2"
 )
 
 // Render provides template rendering capabilities for web applications.
@@ -22,6 +23,7 @@ type Render struct {
 	Port       string   // Server port for URL generation
 	ServerName string   // Server name for URL generation
 	JetViews   *jet.Set // Jet template engine
+	Session    *scs.SessionManager
 }
 
 // TemplateData holds all dynamic data needed for template rendering.
@@ -41,6 +43,17 @@ type TemplateData struct {
 	Flash           string             // Flash message to display once
 	Warning         string             // Warning message to display
 	Error           string             // Error message to display
+}
+
+// defaultData returns a pointer to a TemplateData struct with default values.
+func (c *Render) defaultData(td *TemplateData, r *http.Request) *TemplateData {
+	td.Secure = c.Secure
+	td.ServerName = c.ServerName
+	td.Port = c.Port
+	if c.Session.Exists(r.Context(), "userID") {
+		td.IsAuthenticated = true
+	}
+	return td
 }
 
 // Page renders a template using the configured rendering engine.
@@ -135,6 +148,7 @@ func (c *Render) JetPage(w http.ResponseWriter, r *http.Request, view string, va
 		}
 		td = templateData
 	}
+	td = c.defaultData(td, r)
 
 	t, err := c.JetViews.GetTemplate(fmt.Sprintf("%s.jet", view))
 	if err != nil {

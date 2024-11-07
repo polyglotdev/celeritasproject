@@ -14,6 +14,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
+
 	"github.com/polyglotdev/celeritasproject/render"
 	"github.com/polyglotdev/celeritasproject/session"
 )
@@ -247,6 +248,7 @@ func (c *Celeritas) createRenderer() {
 		RootPath: c.RootPath,
 		Port:     c.config.port,
 		JetViews: c.JetViews,
+		Session:  c.Session,
 	}
 	c.Render = &myRenderer
 }
