@@ -1,9 +1,25 @@
 package celeritas
 
 import (
+	"crypto/rand"
 	"fmt"
 	"os"
 )
+
+const allowedChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_+"
+
+// RandomString generates a random string of a given length using a cryptographically secure random number generator.
+// It returns a string of random characters from the allowedChars constant.
+func (c *Celeritas) RandomString(length int) string {
+	randomChars, charSet := make([]rune, length), []rune(allowedChars)
+
+	for i := range randomChars {
+		prime, _ := rand.Prime(rand.Reader, len(charSet))
+		randomInt, maxValue := prime.Uint64(), uint64(len(charSet))
+		randomChars[i] = charSet[randomInt%maxValue]
+	}
+	return string(randomChars)
+}
 
 // CreateDirIfNotExist takes a path string
 // and returns an error. It creates the directory if it does not exist.
