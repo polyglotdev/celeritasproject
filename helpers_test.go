@@ -32,19 +32,19 @@ func TestCeleritas_RandomString(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(ts *testing.T) {
 			got := c.RandomString(tt.length)
 
 			// Check length
 			if len(got) != tt.want {
-				t.Errorf("RandomString() length = %v, want %v", len(got), tt.want)
+				ts.Errorf("RandomString() length = %v, want %v", len(got), tt.want)
 			}
 
 			// Check characters are valid
 			if tt.length > 0 {
 				for _, char := range got {
 					if !strings.ContainsRune(allowedChars, char) {
-						t.Errorf("RandomString() contains invalid character: %c", char)
+						ts.Errorf("RandomString() contains invalid character: %c", char)
 					}
 				}
 			}
@@ -79,17 +79,17 @@ func TestCeleritas_CreateDirIfNotExist(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(ts *testing.T) {
 			err := c.CreateDirIfNotExist(tt.path)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("CreateDirIfNotExist() error = %v, wantErr %v", err, tt.wantErr)
+				ts.Errorf("CreateDirIfNotExist() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
 			if !tt.wantErr {
 				// Check if directory exists
 				if _, err := os.Stat(tt.path); os.IsNotExist(err) {
-					t.Errorf("CreateDirIfNotExist() directory was not created at %v", tt.path)
+					ts.Errorf("CreateDirIfNotExist() directory was not created at %v", tt.path)
 				}
 			}
 		})
@@ -134,17 +134,17 @@ func TestCeleritas_CreateFileIfNotExists(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(ts *testing.T) {
 			err := c.CreateFileIfNotExists(tt.path)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("CreateFileIfNotExists() error = %v, wantErr %v", err, tt.wantErr)
+				ts.Errorf("CreateFileIfNotExists() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
 			if !tt.wantErr {
 				// Check if file exists
 				if _, err := os.Stat(tt.path); os.IsNotExist(err) {
-					t.Errorf("CreateFileIfNotExists() file was not created at %v", tt.path)
+					ts.Errorf("CreateFileIfNotExists() file was not created at %v", tt.path)
 				}
 			}
 		})
