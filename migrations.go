@@ -3,7 +3,11 @@ package celeritas
 import (
 	"log"
 
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/mysql"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
 func (c *Celeritas) MigrateUp(dsn string) error {
@@ -13,7 +17,7 @@ func (c *Celeritas) MigrateUp(dsn string) error {
 	}
 	defer m.Close()
 
-	if err = m.Up(); err != nil {
+	if err := m.Up(); err != nil {
 		log.Println("Error running migration:", err)
 		return err
 	}
