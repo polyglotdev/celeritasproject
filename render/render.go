@@ -35,7 +35,6 @@ type TemplateData struct {
 }
 
 func (c *Render) defaultData(td *TemplateData, r *http.Request) *TemplateData {
-	fmt.Printf("Before defaultData: ServerName=%s\n", td.ServerName)
 	if td.ServerName == "" {
 		td.ServerName = c.ServerName
 	}
@@ -46,7 +45,6 @@ func (c *Render) defaultData(td *TemplateData, r *http.Request) *TemplateData {
 	if c.Session != nil && c.Session.Exists(r.Context(), "userID") {
 		td.IsAuthenticated = true
 	}
-	fmt.Printf("After defaultData: ServerName=%s\n", td.ServerName)
 	return td
 }
 
