@@ -59,13 +59,15 @@ func getDSN() string {
 
 func showHelp() {
 	color.Yellow(`Available commands:
-	help           				   - show the help commands
-	version        				   - print application version
-	migrate up     				   - runs all up migrations that have not been run previously
-	migrate down   				   - reverses the most recent migration
-	migrate reset  				   - reverses all migrations and runs them again
-	make migration <name>   		   - creates a new migration file
-	make auth                 	           - creates and runs migrations for authentication tables, and creates models and middleware
-	make handler <name>   				   - creates a new handler file
+	help                        - show the help commands
+	version                     - print application version
+	migrate up                  - runs all up migrations that have not been run previously
+	migrate down                - reverses the most recent migration
+	migrate reset               - reverses all migrations and runs them again
+	make migration <name>       - creates a new migration file
+	make auth                   - creates and runs migrations for authentication tables, and creates models and middleware
+	make handler <name>         - creates a stub handler in the handlers directory
+	make model <name>           - creates a stub model in the models directory
+	make middleware <name>      - creates a stub middleware in the middleware directory
 	`)
 }
