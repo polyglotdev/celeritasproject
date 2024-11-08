@@ -24,3 +24,8 @@ func setup() {
 	cel.RootPath = path
 	cel.DB.DataType = os.Getenv("DATABASE_TYPE")
 }
+
+// DSN returns the Data Source Name for the database.
+func DSN() string {
+	return os.Getenv("DATABASE_DSN")
+}

@@ -36,6 +36,7 @@ func main() {
 		if err != nil {
 			exitGracefully(err)
 		}
+	case "migrate":
 
 	default:
 		log.Println(arg2, arg3)
