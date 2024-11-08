@@ -1,0 +1,11 @@
+package handlers
+
+import (
+	"net/http"
+)
+
+// $HANDLERNAME$ is the handler for the $HANDLERNAME$ resource
+type $HANDLERNAME$ struct{}
+
+func (h *Handler) $HANDLERNAME$(w http.ResponseWriter, r *http.Request) {
+}

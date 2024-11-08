@@ -66,5 +66,6 @@ func showHelp() {
 	migrate reset  				   - reverses all migrations and runs them again
 	make migration <name>   		   - creates a new migration file
 	make auth                 	           - creates and runs migrations for authentication tables, and creates models and middleware
+	make handler <name>   				   - creates a new handler file
 	`)
 }
