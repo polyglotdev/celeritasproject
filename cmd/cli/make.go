@@ -78,6 +78,21 @@ type HandlerGenerator struct {
 	BaseGenerator
 }
 
+type SessionGenerator struct {
+	BaseGenerator
+}
+
+func (g *SessionGenerator) Generate(name string) error {
+	return nil
+}
+
+func (g *SessionGenerator) ValidateName(name string) error {
+	if name == "" {
+		return errors.New("you must give the session a name")
+	}
+	return nil
+}
+
 func (g *HandlerGenerator) Generate(name string) error {
 	fileName := fmt.Sprintf("%s/handlers/%s.go", g.rootPath, strings.ToLower(name))
 	if fileExists(fileName) {
@@ -164,6 +179,8 @@ func newGenerator(genType string, cfg *Celeritas) (Generator, error) {
 		return &HandlerGenerator{BaseGenerator: base}, nil
 	case "model":
 		return &ModelGenerator{BaseGenerator: base}, nil
+	case "session":
+		return &SessionGenerator{BaseGenerator: base}, nil
 	case "middleware":
 		return &MiddlewareGenerator{BaseGenerator: base}, nil
 	default:

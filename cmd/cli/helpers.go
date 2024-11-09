@@ -67,7 +67,8 @@ func showHelp() {
 	make migration <name>       - creates a new migration file
 	make auth                   - creates and runs migrations for authentication tables, and creates models and middleware
 	make handler <name>         - creates a stub handler in the handlers directory
-	make model <name>           - creates a stub model in the models directory
+	make model <name>           - creates a stub model in the data directory
 	make middleware <name>      - creates a stub middleware in the middleware directory
+	make session                - creates a table in the database as a session store
 	`)
 }
