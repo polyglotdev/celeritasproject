@@ -8,93 +8,212 @@ import (
 
 	"github.com/gertd/go-pluralize"
 	"github.com/iancoleman/strcase"
+	celeritas "github.com/polyglotdev/celeritasproject"
 )
 
-func doMake(arg2, arg3 string) error {
+// Add type alias if needed
+type Celeritas = celeritas.Celeritas
 
-	switch arg2 {
-	case "migration":
-		dbType := cel.DB.DataType
-		if arg3 == "" {
-			exitGracefully(errors.New("you must give the migration a name"))
-		}
+// Generator interface defines the contract for different types of generators
+type Generator interface {
+	Generate(name string) error
+	ValidateName(name string) error
+}
 
-		fileName := fmt.Sprintf("%d_%s", time.Now().UnixMicro(), arg3)
+// BaseGenerator provides common functionality
+type BaseGenerator struct {
+	rootPath   string
+	templateFS TemplateFS
+	pluralize  *pluralize.Client
+}
 
-		upFile := cel.RootPath + "/migrations/" + fileName + "." + dbType + ".up.sql"
-		downFile := cel.RootPath + "/migrations/" + fileName + "." + dbType + ".down.sql"
+// TemplateFS interface to make testing easier
+type TemplateFS interface {
+	ReadFile(name string) ([]byte, error)
+}
 
-		err := copyFileFromTemplate("templates/migrations/migrations."+dbType+".up.sql", upFile)
-		if err != nil {
-			exitGracefully(err)
-		}
+// FileSystem interface for testing file operations
+type FileSystem interface {
+	Exists(path string) bool
+	WriteFile(path string, data []byte) error
+	CopyFile(src, dst string) error
+}
 
-		err = copyFileFromTemplate("templates/migrations/migrations."+dbType+".down.sql", downFile)
-		if err != nil {
-			exitGracefully(err)
-		}
-	case "auth":
-		err := doAuth()
-		if err != nil {
-			exitGracefully(err)
-		}
-	case "handler":
-		if arg3 == "" {
-			exitGracefully(errors.New("you must give the handler a name"))
-		}
+// MigrationGenerator handles migration generation
+type MigrationGenerator struct {
+	BaseGenerator
+	dbType string
+}
 
-		fileName := cel.RootPath + "/handlers/" + strings.ToLower(arg3) + ".go"
-		if fileExists(fileName) {
-			exitGracefully(errors.New(fileName + " already exists"))
-		}
+func (g *MigrationGenerator) Generate(name string) error {
+	fileName := fmt.Sprintf("%d_%s", time.Now().UnixMicro(), name)
 
-		data, err := templateFS.ReadFile("templates/handlers/handler.go.txt")
-		if err != nil {
-			exitGracefully(err)
-		}
+	upFile := fmt.Sprintf("%s/migrations/%s.%s.up.sql", g.rootPath, fileName, g.dbType)
+	downFile := fmt.Sprintf("%s/migrations/%s.%s.down.sql", g.rootPath, fileName, g.dbType)
 
-		handler := string(data)
-		handlerName := strcase.ToCamel(strings.ReplaceAll(arg3, "handler", "Handler"))
-		handler = strings.ReplaceAll(handler, "$HANDLERNAME$", handlerName)
-		handler = strings.ReplaceAll(handler, "$FIRSTLETTER$", strings.ToLower(handlerName[:1]))
-		err = copyDataToFile([]byte(handler), fileName)
-		if err != nil {
-			exitGracefully(err)
-		}
-	case "model":
-		if arg3 == "" {
-			exitGracefully(errors.New("you must give the model a name"))
-		}
-
-		fileName := cel.RootPath + "/data/" + strings.ToLower(arg3) + ".go"
-		if fileExists(fileName) {
-			exitGracefully(errors.New(fileName + " already exists"))
-		}
-
-		data, err := templateFS.ReadFile("templates/data/model.go.txt")
-		if err != nil {
-			exitGracefully(err)
-		}
-
-		// Create pluralize client
-		p := pluralize.NewClient()
-
-		// Get singular form for the model name
-		modelName := strcase.ToCamel(p.Singular(arg3))
-
-		// Get plural form for table name
-		tableName := strings.ToLower(p.Plural(arg3))
-
-		model := string(data)
-		model = strings.ReplaceAll(model, "$MODELNAME$", modelName)
-		model = strings.ReplaceAll(model, "$TABLENAME$", tableName)
-		model = strings.ReplaceAll(model, "$FIRSTLETTER$", strings.ToLower(modelName[:1]))
-
-		err = copyDataToFile([]byte(model), fileName)
-		if err != nil {
-			exitGracefully(err)
-		}
+	if err := copyFileFromTemplate(
+		fmt.Sprintf("templates/migrations/migrations.%s.up.sql", g.dbType),
+		upFile,
+	); err != nil {
+		return err
 	}
 
+	return copyFileFromTemplate(
+		fmt.Sprintf("templates/migrations/migrations.%s.down.sql", g.dbType),
+		downFile,
+	)
+}
+
+// AuthGenerator handles auth generation
+type AuthGenerator struct {
+	BaseGenerator
+}
+
+func (g *AuthGenerator) Generate(name string) error {
+	return doAuth()
+}
+
+// HandlerGenerator handles handler generation
+type HandlerGenerator struct {
+	BaseGenerator
+}
+
+func (g *HandlerGenerator) Generate(name string) error {
+	fileName := fmt.Sprintf("%s/handlers/%s.go", g.rootPath, strings.ToLower(name))
+	if fileExists(fileName) {
+		return fmt.Errorf("%s already exists", fileName)
+	}
+
+	data, err := g.templateFS.ReadFile("templates/handlers/handler.go.txt")
+	if err != nil {
+		return err
+	}
+
+	handlerName := strcase.ToCamel(strings.ReplaceAll(name, "handler", "Handler"))
+	content := string(data)
+	content = strings.ReplaceAll(content, "$HANDLERNAME$", handlerName)
+	content = strings.ReplaceAll(content, "$FIRSTLETTER$", strings.ToLower(handlerName[:1]))
+
+	return copyDataToFile([]byte(content), fileName)
+}
+
+// ModelGenerator handles model generation
+type ModelGenerator struct {
+	BaseGenerator
+}
+
+func (g *ModelGenerator) Generate(name string) error {
+	fileName := fmt.Sprintf("%s/data/%s.go", g.rootPath, strings.ToLower(name))
+	if fileExists(fileName) {
+		return fmt.Errorf("%s already exists", fileName)
+	}
+
+	data, err := g.templateFS.ReadFile("templates/data/model.go.txt")
+	if err != nil {
+		return err
+	}
+
+	modelName := strcase.ToCamel(g.pluralize.Singular(name))
+	tableName := strings.ToLower(g.pluralize.Plural(name))
+
+	content := string(data)
+	content = strings.ReplaceAll(content, "$MODELNAME$", modelName)
+	content = strings.ReplaceAll(content, "$TABLENAME$", tableName)
+	content = strings.ReplaceAll(content, "$FIRSTLETTER$", strings.ToLower(modelName[:1]))
+
+	return copyDataToFile([]byte(content), fileName)
+}
+
+// MiddlewareGenerator handles middleware generation
+type MiddlewareGenerator struct {
+	BaseGenerator
+}
+
+func (g *MiddlewareGenerator) Generate(name string) error {
+	fileName := fmt.Sprintf("%s/middleware/%s.go", g.rootPath, strings.ToLower(name))
+	if fileExists(fileName) {
+		return fmt.Errorf("%s already exists", fileName)
+	}
+
+	data, err := g.templateFS.ReadFile("templates/middleware/middleware.go.txt")
+	if err != nil {
+		return err
+	}
+
+	middlewareName := strcase.ToCamel(name)
+	content := string(data)
+	content = strings.ReplaceAll(content, "$MIDDLEWARENAME$", middlewareName)
+
+	return copyDataToFile([]byte(content), fileName)
+}
+
+// Factory to create appropriate generator
+func newGenerator(genType string, cfg *Celeritas) (Generator, error) {
+	base := BaseGenerator{
+		rootPath:   cfg.RootPath,
+		templateFS: templateFS,
+		pluralize:  pluralize.NewClient(),
+	}
+
+	switch genType {
+	case "migration":
+		return &MigrationGenerator{BaseGenerator: base, dbType: cfg.DB.DataType}, nil
+	case "auth":
+		return &AuthGenerator{BaseGenerator: base}, nil
+	case "handler":
+		return &HandlerGenerator{BaseGenerator: base}, nil
+	case "model":
+		return &ModelGenerator{BaseGenerator: base}, nil
+	case "middleware":
+		return &MiddlewareGenerator{BaseGenerator: base}, nil
+	default:
+		return nil, fmt.Errorf("unknown generator type: %s", genType)
+	}
+}
+
+// Main entry point
+func doMake(arg2, arg3 string) error {
+	gen, err := newGenerator(arg2, &cel)
+	if err != nil {
+		return err
+	}
+
+	if err := gen.ValidateName(arg3); err != nil {
+		return err
+	}
+
+	return gen.Generate(arg3)
+}
+
+// Add validation methods for each generator
+func (g *MigrationGenerator) ValidateName(name string) error {
+	if name == "" {
+		return errors.New("you must give the migration a name")
+	}
+	return nil
+}
+
+func (g *AuthGenerator) ValidateName(name string) error {
+	return nil // Auth doesn't need a name
+}
+
+func (g *HandlerGenerator) ValidateName(name string) error {
+	if name == "" {
+		return errors.New("you must give the handler a name")
+	}
+	return nil
+}
+
+func (g *ModelGenerator) ValidateName(name string) error {
+	if name == "" {
+		return errors.New("you must give the model a name")
+	}
+	return nil
+}
+
+func (g *MiddlewareGenerator) ValidateName(name string) error {
+	if name == "" {
+		return errors.New("you must give the middleware a name")
+	}
 	return nil
 }
