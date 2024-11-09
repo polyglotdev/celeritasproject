@@ -7,5 +7,5 @@ import (
 // $HANDLERNAME$ is the handler for the $HANDLERNAME$ resource
 type $HANDLERNAME$ struct{}
 
-func (h *Handler) $HANDLERNAME$(w http.ResponseWriter, r *http.Request) {
+func ($FIRSTLETTER$ *$HANDLERNAME$) $HANDLERNAME$(w http.ResponseWriter, req *http.Request) {
 }

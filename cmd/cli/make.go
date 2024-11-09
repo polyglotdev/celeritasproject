@@ -3,10 +3,10 @@ package main
 import (
 	"errors"
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
+	"github.com/gertd/go-pluralize"
 	"github.com/iancoleman/strcase"
 )
 
@@ -54,9 +54,43 @@ func doMake(arg2, arg3 string) error {
 		}
 
 		handler := string(data)
-		handler = strings.ReplaceAll(handler, "$HANDLERNAME$", strcase.ToCamel(arg3))
+		handlerName := strcase.ToCamel(strings.ReplaceAll(arg3, "handler", "Handler"))
+		handler = strings.ReplaceAll(handler, "$HANDLERNAME$", handlerName)
+		handler = strings.ReplaceAll(handler, "$FIRSTLETTER$", strings.ToLower(handlerName[:1]))
+		err = copyDataToFile([]byte(handler), fileName)
+		if err != nil {
+			exitGracefully(err)
+		}
+	case "model":
+		if arg3 == "" {
+			exitGracefully(errors.New("you must give the model a name"))
+		}
 
-		err = os.WriteFile(fileName, []byte(handler), 0644)
+		fileName := cel.RootPath + "/data/" + strings.ToLower(arg3) + ".go"
+		if fileExists(fileName) {
+			exitGracefully(errors.New(fileName + " already exists"))
+		}
+
+		data, err := templateFS.ReadFile("templates/data/model.go.txt")
+		if err != nil {
+			exitGracefully(err)
+		}
+
+		// Create pluralize client
+		p := pluralize.NewClient()
+
+		// Get singular form for the model name
+		modelName := strcase.ToCamel(p.Singular(arg3))
+
+		// Get plural form for table name
+		tableName := strings.ToLower(p.Plural(arg3))
+
+		model := string(data)
+		model = strings.ReplaceAll(model, "$MODELNAME$", modelName)
+		model = strings.ReplaceAll(model, "$TABLENAME$", tableName)
+		model = strings.ReplaceAll(model, "$FIRSTLETTER$", strings.ToLower(modelName[:1]))
+
+		err = copyDataToFile([]byte(model), fileName)
 		if err != nil {
 			exitGracefully(err)
 		}

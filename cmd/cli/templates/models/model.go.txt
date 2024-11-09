@@ -1,0 +1,9 @@
+package models
+
+type $MODELNAME$ struct {
+  // Add model fields here...
+}
+
+func (m *$MODELNAME$) Table() string {
+  return "$TABLENAME$"
+}
