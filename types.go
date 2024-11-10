@@ -17,11 +17,13 @@ type cookieConfig struct {
 	domain   string
 }
 
+// databaseConfig represents the configuration for the database
 type databaseConfig struct {
 	dsn      string
 	database string
 }
 
+// Database represents the database connection
 type Database struct {
 	DataType string
 	Pool     *sql.DB

@@ -2,7 +2,7 @@ package main
 
 import (
 	"errors"
-	"log"
+	"fmt"
 	"os"
 
 	"github.com/fatih/color"
@@ -14,9 +14,21 @@ const version = "1.0.0"
 var cel celeritas.Celeritas
 
 func main() {
+	var message string
 	arg1, arg2, arg3, err := validateInput()
 	if err != nil {
 		exitGracefully(err)
+	}
+
+	setup()
+
+	validCommands := []string{"help", "version", "make", "migrate", "auth", "model"}
+	if !contains(validCommands, arg1) {
+		suggestion := findClosestMatch(arg1, validCommands)
+		if suggestion != "" {
+			exitGracefully(fmt.Errorf("invalid command: %s\nDid you mean '%s'?", arg1, suggestion))
+		}
+		exitGracefully(fmt.Errorf("invalid command: %s\nRun 'celeritas help' for usage", arg1))
 	}
 
 	switch arg1 {
@@ -26,9 +38,29 @@ func main() {
 	case "version":
 		color.Yellow("Application version: " + version)
 
+	case "make":
+		if arg2 == "" {
+			exitGracefully(errors.New("make requires a subcommand: (migration|model|handler|middleware)"))
+		}
+		err = doMake(arg2, arg3)
+		if err != nil {
+			exitGracefully(err)
+		}
+
+	case "migrate":
+		if arg2 == "" {
+			arg2 = "up"
+		}
+		err = doMigrate(arg2, arg3)
+		if err != nil {
+			exitGracefully(err)
+		}
+		message = "Migration " + arg2 + " completed"
+
 	default:
-		log.Println(arg2, arg3)
+		showHelp()
 	}
+	exitGracefully(nil, message)
 }
 
 func validateInput() (string, string, string, error) {
@@ -45,20 +77,11 @@ func validateInput() (string, string, string, error) {
 			arg3 = os.Args[3]
 		}
 	} else {
-		color.Red("Error: command required")
 		showHelp()
 		return "", "", "", errors.New("command required")
 	}
 
 	return arg1, arg2, arg3, nil
-}
-
-func showHelp() {
-	color.Yellow(`Available commands:
-	help           - show the help commands
-	version        - print application version
-	
-	`)
 }
 
 func exitGracefully(err error, msg ...string) {
@@ -69,12 +92,13 @@ func exitGracefully(err error, msg ...string) {
 
 	if err != nil {
 		color.Red("Error: %v\n", err)
+		os.Exit(1)
 	}
 
 	if len(message) > 0 {
 		color.Yellow(message)
 	} else {
-		color.Green("Finished!")
+		color.Green("process completed successfully")
 	}
 
 	os.Exit(0)

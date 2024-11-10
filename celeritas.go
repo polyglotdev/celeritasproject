@@ -51,7 +51,7 @@ type Celeritas struct {
 	config   config              // Internal server configuration settings
 	Render   *render.Render      // Rendering engine
 	Session  *scs.SessionManager // Session manager
-	DB       Database            // Database
+	DB       Database            // Database connection
 	JetViews *jet.Set            // Jet template engine
 }
 
@@ -253,18 +253,20 @@ func (c *Celeritas) createRenderer() {
 	c.Render = &myRenderer
 }
 
-// BuildDSN builds the datasource name for our database, and returns it as a string
+// BuildDSN builds the datasource name for our database, and returns it as a string.
 func (c *Celeritas) BuildDSN() string {
 	var dsn string
 
 	switch os.Getenv("DATABASE_TYPE") {
 	case "postgres", "postgresql":
-		dsn = fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=%s timezone=UTC connect_timeout=5",
+		dsn = fmt.Sprintf(
+			"host=%s port=%s user=%s dbname=%s sslmode=%s timezone=UTC connect_timeout=5",
 			os.Getenv("DATABASE_HOST"),
 			os.Getenv("DATABASE_PORT"),
 			os.Getenv("DATABASE_USER"),
 			os.Getenv("DATABASE_NAME"),
-			os.Getenv("DATABASE_SSL_MODE"))
+			os.Getenv("DATABASE_SSL_MODE"),
+		)
 
 		if os.Getenv("DATABASE_PASS") != "" {
 			dsn = fmt.Sprintf("%s password=%s", dsn, os.Getenv("DATABASE_PASS"))
