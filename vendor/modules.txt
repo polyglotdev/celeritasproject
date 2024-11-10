@@ -4,6 +4,12 @@ github.com/CloudyKit/fastprinter
 # github.com/CloudyKit/jet/v6 v6.2.0
 ## explicit; go 1.12
 github.com/CloudyKit/jet/v6
+# github.com/alexedwards/scs/mysqlstore v0.0.0-20240316134038-7e11d57e8885
+## explicit; go 1.12
+github.com/alexedwards/scs/mysqlstore
+# github.com/alexedwards/scs/postgresstore v0.0.0-20240316134038-7e11d57e8885
+## explicit; go 1.12
+github.com/alexedwards/scs/postgresstore
 # github.com/alexedwards/scs/v2 v2.8.0
 ## explicit; go 1.12
 github.com/alexedwards/scs/v2
@@ -18,8 +24,8 @@ github.com/gertd/go-pluralize
 ## explicit; go 1.14
 github.com/go-chi/chi/v5
 github.com/go-chi/chi/v5/middleware
-# github.com/go-sql-driver/mysql v1.5.0
-## explicit; go 1.10
+# github.com/go-sql-driver/mysql v1.7.1
+## explicit; go 1.13
 github.com/go-sql-driver/mysql
 # github.com/golang-migrate/migrate/v4 v4.18.1
 ## explicit; go 1.22.0
