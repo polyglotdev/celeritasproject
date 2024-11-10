@@ -20,14 +20,20 @@ jobs:
         with:
           go-version: 1.23.2
 
+      - name: Cleanup Go Cache
+        run: |
+          rm -rf ~/.cache/go-build
+          rm -rf ~/go/pkg/mod
+
       - name: Go Cache
         uses: actions/cache@v4
         with:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}-${{ github.run_id }}
           restore-keys: |
+            ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}-
             ${{ runner.os }}-go-
 
       - name: Download dependencies
