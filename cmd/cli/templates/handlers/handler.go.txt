@@ -1,0 +1,15 @@
+package handlers
+
+import (
+	"net/http"
+)
+
+// $HANDLERNAME$ comment goes here
+type $HANDLERNAME$ struct {
+	*BaseHandler
+}
+
+// $HANDLERNAME$ comment goes here
+func ($FIRSTLETTER$ *$HANDLERNAME$) $HANDLERNAME$(w http.ResponseWriter, r *http.Request) {
+	// handler logic here
+}
