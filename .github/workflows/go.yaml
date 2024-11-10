@@ -24,10 +24,10 @@ jobs:
         run: |
           sudo rm -rf ~/.cache/go-build
           sudo rm -rf ~/go/pkg/mod
-          sudo mkdir -p ~/.cache/go-build
-          sudo mkdir -p ~/go/pkg/mod
-          sudo chmod -R 777 ~/.cache/go-build
-          sudo chmod -R 777 ~/go/pkg/mod
+          mkdir -p ~/.cache/go-build
+          mkdir -p ~/go/pkg/mod
+          sudo chown -R $USER:$USER ~/.cache/go-build
+          sudo chown -R $USER:$USER ~/go/pkg/mod
 
       - name: Go Cache
         uses: actions/cache@v4
