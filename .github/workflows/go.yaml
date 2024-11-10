@@ -22,8 +22,12 @@ jobs:
 
       - name: Cleanup Go Cache
         run: |
-          rm -rf ~/.cache/go-build
-          rm -rf ~/go/pkg/mod
+          sudo rm -rf ~/.cache/go-build
+          sudo rm -rf ~/go/pkg/mod
+          sudo mkdir -p ~/.cache/go-build
+          sudo mkdir -p ~/go/pkg/mod
+          sudo chmod -R 777 ~/.cache/go-build
+          sudo chmod -R 777 ~/go/pkg/mod
 
       - name: Go Cache
         uses: actions/cache@v4
