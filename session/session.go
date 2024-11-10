@@ -1,11 +1,14 @@
 package session
 
 import (
+	"database/sql"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/alexedwards/scs/mysqlstore"
+	"github.com/alexedwards/scs/postgresstore"
 	"github.com/alexedwards/scs/v2"
 )
 
@@ -39,6 +42,7 @@ type Session struct {
 	// CookieSecure determines if the cookie should only be transmitted over HTTPS.
 	// Valid values are "true" or "false" (case insensitive).
 	CookieSecure string
+	DBPool       *sql.DB
 }
 
 // InitSession initializes and returns a new session manager using the
@@ -79,13 +83,12 @@ func (c *Session) InitSession() *scs.SessionManager {
 	// Configure session store based on SessionType
 	switch strings.ToLower(c.SessionType) {
 	case "redis":
-		// TODO: Implement Redis session store
 
 	case "mysql", "mariadb":
-		// TODO: Implement MySQL/MariaDB session store
+		session.Store = mysqlstore.New(c.DBPool)
 
 	case "postgres", "postgresql":
-		// TODO: Implement PostgreSQL session store
+		session.Store = postgresstore.New(c.DBPool)
 
 	default:
 		// Default to cookie-based session store
