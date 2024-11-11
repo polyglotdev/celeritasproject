@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/asaskevich/govalidator"
 )
@@ -60,5 +61,45 @@ func (v *Validation) Check(ok bool, key, message string) {
 func (v *Validation) IsEmail(field, value string) {
 	if !govalidator.IsEmail(value) {
 		v.AddError(field, "invalid email address")
+	}
+}
+
+// IsInt checks if the value is an integer
+func (v *Validation) IsInt(field, value string) {
+	if value == "" {
+		v.AddError(field, "this field cannot be empty")
+		return
+	}
+
+	if !govalidator.IsInt(value) {
+		v.AddError(field, "must be an integer")
+	}
+}
+
+// IsFloat checks if the value is a float
+func (v *Validation) IsFloat(field, value string) {
+	if value == "" {
+		v.AddError(field, "this field cannot be empty")
+		return
+	}
+
+	if !govalidator.IsFloat(value) {
+		v.AddError(field, "must be a float point number")
+	}
+}
+
+// IsDateISO checks if the value is a valid ISO date
+func (v *Validation) IsDateISO(field, value string) {
+	validFormat := "2006-01-02"
+	_, err := time.Parse(validFormat, value)
+	if err != nil {
+		v.AddError(field, "this field must be a valid date in format YYYY-MM-DD")
+	}
+}
+
+// NoSpaces removes all whitespace from the value
+func (v *Validation) NoSpaces(field, value string) {
+	if govalidator.HasWhitespace(value) {
+		v.AddError(field, "this field cannot contain spaces")
 	}
 }
