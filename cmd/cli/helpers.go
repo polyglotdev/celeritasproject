@@ -176,5 +176,6 @@ func showHelp() {
 	make migration <name> - create a new migration files for up and down migrations
 	make model <name>     - create a new model file
 	make handler <name>   - create a new handler file
+	make key              - generate a new encryption key
 	`)
 }

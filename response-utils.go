@@ -95,7 +95,7 @@ func (c *Celeritas) WriteXML(w http.ResponseWriter, status int, data any, header
 func (c *Celeritas) DownloadFile(w http.ResponseWriter, r *http.Request, pathToFile, fileName string) error {
 	fp := path.Join(pathToFile, fileName)
 	fileToServe := filepath.Clean(fp)
-	w.Header().Set("Content-Type", fmt.Sprintf("attachment; filename=\"%s\"", fileName))
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", fileName))
 	http.ServeFile(w, r, fileToServe)
 	return nil
 }

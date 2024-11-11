@@ -1,8 +1,12 @@
 package celeritas
 
 import (
+	"crypto/aes"
+	"crypto/cipher"
 	"crypto/rand"
+	"encoding/base64"
 	"fmt"
+	"io"
 	"os"
 )
 
@@ -51,4 +55,53 @@ func (c *Celeritas) CreateFileIfNotExists(path string) error {
 		}(file)
 	}
 	return nil
+}
+
+type Encryption struct {
+	Key []byte
+}
+
+// Encrypt encrypts the given data using AES CFB mode encryption.
+// It returns the encrypted data as a base64 encoded string.
+// If an error occurs during encryption, it returns an empty string and the error.
+func (e *Encryption) Encrypt(data string) (string, error) {
+	plainText := []byte(data)
+	block, err := aes.NewCipher(e.Key)
+	if err != nil {
+		return "", err
+	}
+
+	cipherText := make([]byte, aes.BlockSize+len(plainText))
+	iv := cipherText[:aes.BlockSize]
+	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
+		return "", err
+	}
+
+	stream := cipher.NewCFBEncrypter(block, iv)
+	stream.XORKeyStream(cipherText[aes.BlockSize:], plainText)
+
+	return base64.URLEncoding.EncodeToString(cipherText), nil
+}
+
+// Decrypt decrypts the given data using AES CFB mode decryption.
+// It returns the decrypted data as a string.
+// If an error occurs during decryption, it returns an empty string and the error.
+func (e *Encryption) Decrypt(data string) (string, error) {
+	cipherText, err := base64.URLEncoding.DecodeString(data)
+	if err != nil {
+		return "", err
+	}
+
+	block, err := aes.NewCipher(e.Key)
+	if err != nil {
+		return "", err
+	}
+
+	iv := cipherText[:aes.BlockSize]
+	cipherText = cipherText[aes.BlockSize:]
+
+	stream := cipher.NewCFBDecrypter(block, iv)
+	stream.XORKeyStream(cipherText, cipherText)
+
+	return string(cipherText), nil
 }

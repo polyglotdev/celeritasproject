@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/fatih/color"
 	"github.com/gertd/go-pluralize"
 	"github.com/iancoleman/strcase"
 )
@@ -63,19 +64,70 @@ import (
 // to implement custom error handling strategies, except for fatal errors that should
 // terminate execution.
 func doMake(arg2, arg3 string) error {
-	validSubcommands := []string{"migration", "model", "handler", "middleware", "auth", "session"}
-	if !contains(validSubcommands, arg2) {
-		suggestion := findClosestMatch(arg2, validSubcommands)
+	validCommands := []string{"key", "migration", "model", "handler", "middleware"}
+	if !contains(validCommands, arg2) {
+		suggestion := findClosestMatch(arg2, validCommands)
 		if suggestion != "" {
-			return fmt.Errorf("invalid make subcommand: %s\nDid you mean '%s'?", arg2, suggestion)
+			return fmt.Errorf("invalid 'make' subcommand: %s\nDid you mean '%s'?\nValid subcommands are: key, migration, model, handler, middleware", arg2, suggestion)
 		}
-		return fmt.Errorf(
-			"invalid make subcommand: %s\nValid subcommands are: migration, model, handler, middleware, auth, session",
-			arg2,
-		)
+		return fmt.Errorf("invalid 'make' subcommand: %s\nValid subcommands are: key, migration, model, handler, middleware", arg2)
 	}
 
 	switch arg2 {
+	case "key":
+		// Check if .env exists and if it contains KEY=
+		if _, err := os.Stat(".env"); err == nil {
+			content, err := os.ReadFile(".env")
+			if err != nil {
+				return err
+			}
+
+			if strings.Contains(string(content), "KEY=") {
+				// Ask for confirmation
+				fmt.Print("KEY already exists in .env. Do you want to overwrite it? (y/n): ")
+				var response string
+				_, err = fmt.Scanln(&response)
+				if err != nil {
+					exitGracefully(err)
+				}
+
+				if strings.ToLower(response) != "y" {
+					color.Yellow("Operation cancelled")
+					return nil
+				}
+			}
+		}
+
+		// Generate the key
+		rnd := cel.RandomString(32)
+
+		// Read existing content
+		var existingContent string
+		if data, err := os.ReadFile(".env"); err == nil {
+			existingContent = string(data)
+		}
+
+		// Remove existing KEY line if it exists
+		lines := strings.Split(existingContent, "\n")
+		var newLines []string
+		for _, line := range lines {
+			if !strings.HasPrefix(line, "KEY=") {
+				newLines = append(newLines, line)
+			}
+		}
+
+		// Add new KEY
+		newLines = append(newLines, fmt.Sprintf("KEY=%s", rnd))
+
+		// Write back to file
+		err := os.WriteFile(".env", []byte(strings.Join(newLines, "\n")), 0644)
+		if err != nil {
+			return err
+		}
+
+		color.Yellow("Encryption key: " + rnd)
+		color.Green("Key has been added to .env file")
+
 	case "migration":
 		dbType := cel.DB.DataType
 		if arg3 == "" {

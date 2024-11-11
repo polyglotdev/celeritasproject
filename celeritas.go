@@ -41,18 +41,19 @@ const (
 //
 // Celeritas is safe for use by a single goroutine at a time.
 type Celeritas struct {
-	AppName  string              // Application name used in logging and identification
-	Debug    bool                // Debug mode flag for detailed logging and error handling
-	Version  string              // Application version for deployment tracking
-	ErrorLog *log.Logger         // Structured error logging
-	InfoLog  *log.Logger         // Structured information logging
-	RootPath string              // Base directory for application files and folders
-	Routes   *chi.Mux            // HTTP router for handling web requests
-	config   config              // Internal server configuration settings
-	Render   *render.Render      // Rendering engine
-	Session  *scs.SessionManager // Session manager
-	DB       Database            // Database connection
-	JetViews *jet.Set            // Jet template engine
+	AppName       string              // Application name used in logging and identification
+	Debug         bool                // Debug mode flag for detailed logging and error handling
+	Version       string              // Application version for deployment tracking
+	ErrorLog      *log.Logger         // Structured error logging
+	InfoLog       *log.Logger         // Structured information logging
+	RootPath      string              // Base directory for application files and folders
+	Routes        *chi.Mux            // HTTP router for handling web requests
+	config        config              // Internal server configuration settings
+	Render        *render.Render      // Rendering engine
+	Session       *scs.SessionManager // Session manager
+	DB            Database            // Database connection
+	JetViews      *jet.Set            // Jet template engine
+	EncryptionKey string
 }
 
 type config struct {
@@ -141,6 +142,7 @@ func (c *Celeritas) New(rootPath string) error {
 	}
 
 	c.Session = sessionInfo.InitSession()
+	c.EncryptionKey = os.Getenv("KEY")
 
 	var views = jet.NewSet(
 		jet.NewOSFileSystemLoader(fmt.Sprintf("%s/views", rootPath)),
