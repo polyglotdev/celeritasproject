@@ -16,17 +16,8 @@ github.com/alexedwards/scs/v2
 github.com/alexedwards/scs/v2/memstore
 # github.com/alicebob/gopher-json v0.0.0-20200520072559-a9ecdc9d1d3a
 ## explicit
-github.com/alicebob/gopher-json
 # github.com/alicebob/miniredis/v2 v2.33.0
 ## explicit; go 1.17
-github.com/alicebob/miniredis/v2
-github.com/alicebob/miniredis/v2/fpconv
-github.com/alicebob/miniredis/v2/geohash
-github.com/alicebob/miniredis/v2/hyperloglog
-github.com/alicebob/miniredis/v2/metro
-github.com/alicebob/miniredis/v2/proto
-github.com/alicebob/miniredis/v2/server
-github.com/alicebob/miniredis/v2/size
 # github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2
 ## explicit; go 1.13
 github.com/asaskevich/govalidator
@@ -110,10 +101,6 @@ github.com/mattn/go-colorable
 github.com/mattn/go-isatty
 # github.com/yuin/gopher-lua v1.1.1
 ## explicit; go 1.17
-github.com/yuin/gopher-lua
-github.com/yuin/gopher-lua/ast
-github.com/yuin/gopher-lua/parse
-github.com/yuin/gopher-lua/pm
 # go.uber.org/atomic v1.7.0
 ## explicit; go 1.13
 go.uber.org/atomic
