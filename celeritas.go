@@ -13,8 +13,10 @@ import (
 	"github.com/alexedwards/scs/v2"
 	"github.com/fatih/color"
 	"github.com/go-chi/chi/v5"
+	"github.com/gomodule/redigo/redis"
 	"github.com/joho/godotenv"
 
+	"github.com/polyglotdev/celeritasproject/cache"
 	"github.com/polyglotdev/celeritasproject/render"
 	"github.com/polyglotdev/celeritasproject/session"
 )
@@ -53,7 +55,8 @@ type Celeritas struct {
 	Session       *scs.SessionManager // Session manager
 	DB            Database            // Database connection
 	JetViews      *jet.Set            // Jet template engine
-	EncryptionKey string
+	EncryptionKey string              // EncryptionKey for PSQL
+	Cache         cache.Cacher        // Cache client
 }
 
 type config struct {
@@ -95,6 +98,11 @@ func (c *Celeritas) New(rootPath string) error {
 		return err
 	}
 
+	if os.Getenv("CACHE") == "redis" {
+		myRedisCache := c.createClientRedisCache()
+		c.Cache = myRedisCache
+	}
+
 	// start loggers
 	infoLog, errorLog := c.StartLoggers()
 	c.InfoLog = infoLog
@@ -116,6 +124,7 @@ func (c *Celeritas) New(rootPath string) error {
 		}
 	}
 
+	// read in all config settings
 	c.config = config{
 		port:     os.Getenv("PORT"),
 		renderer: os.Getenv("RENDERER"),
@@ -260,6 +269,40 @@ func (c *Celeritas) createRenderer() {
 		Session:  c.Session,
 	}
 	c.Render = &myRenderer
+}
+
+// createClientRedisCache creates a Redis cache client.
+func (c *Celeritas) createClientRedisCache() *cache.RedisCache {
+	return &cache.RedisCache{
+		Conn:   c.createRedisPool(),
+		Prefix: c.config.redis.prefix,
+	}
+}
+
+// createRedisPool creates a Redis connection pool.
+func (c *Celeritas) createRedisPool() *redis.Pool {
+	return &redis.Pool{
+		MaxIdle:     80,
+		MaxActive:   12000,
+		IdleTimeout: 240 * time.Second,
+		Dial: func() (redis.Conn, error) {
+			return redis.Dial("tcp", c.config.redis.host, redis.DialPassword(c.config.redis.password))
+		},
+		TestOnBorrow: func(conn redis.Conn, t time.Time) error {
+			reply, err := conn.Do("GET", "mykey")
+			if err != nil {
+				return err
+			}
+
+			value, ok := reply.([]byte)
+			if !ok {
+				return fmt.Errorf("unexpected reply type: %T", reply)
+			}
+
+			fmt.Println("Value:", string(value))
+			return nil
+		},
+	}
 }
 
 // BuildDSN builds the datasource name for our database, and returns it as a string.
