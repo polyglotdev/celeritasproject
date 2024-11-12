@@ -3,7 +3,9 @@ package celeritas
 import (
 	"encoding/json"
 	"encoding/xml"
+	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"path"
 	"path/filepath"
@@ -54,6 +56,25 @@ func (c *Celeritas) WriteJSON(
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+// ReadJSON takes in a ResponseWriter, Request and an interface and returns and error.
+func (c *Celeritas) ReadJSON(w http.ResponseWriter, r *http.Request, data any) error {
+	maxBytes := 1048576
+	r.Body = http.MaxBytesReader(w, r.Body, int64(maxBytes))
+
+	dec := json.NewDecoder(r.Body)
+	err := dec.Decode(data)
+	if err != nil {
+		return err
+	}
+
+	err = dec.Decode(&struct{}{})
+	if err != io.EOF {
+		return errors.New("body must only have a single json value")
+	}
+
 	return nil
 }
 
