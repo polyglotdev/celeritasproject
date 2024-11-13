@@ -9,7 +9,9 @@ import (
 
 	"github.com/alexedwards/scs/mysqlstore"
 	"github.com/alexedwards/scs/postgresstore"
+	"github.com/alexedwards/scs/redisstore"
 	"github.com/alexedwards/scs/v2"
+	"github.com/gomodule/redigo/redis"
 )
 
 // Package session provides session management functionality using the SCS library.
@@ -43,6 +45,7 @@ type Session struct {
 	// Valid values are "true" or "false" (case insensitive).
 	CookieSecure string
 	DBPool       *sql.DB
+	RedisPool    *redis.Pool
 }
 
 // InitSession initializes and returns a new session manager using the
@@ -83,7 +86,7 @@ func (c *Session) InitSession() *scs.SessionManager {
 	// Configure session store based on SessionType
 	switch strings.ToLower(c.SessionType) {
 	case "redis":
-
+		session.Store = redisstore.New(c.RedisPool)
 	case "mysql", "mariadb":
 		session.Store = mysqlstore.New(c.DBPool)
 

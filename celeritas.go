@@ -25,6 +25,8 @@ const (
 	Version = "1.0.0"
 )
 
+var myRedisCache *cache.RedisCache
+
 // Celeritas represents the core application framework, providing essential services
 // for web applications including routing, logging, and configuration management.
 // It coordinates all the main components needed to run a web server.
@@ -98,8 +100,8 @@ func (c *Celeritas) New(rootPath string) error {
 		return err
 	}
 
-	if os.Getenv("CACHE") == "redis" {
-		myRedisCache := c.createClientRedisCache()
+	if os.Getenv("CACHE") == "redis" || os.Getenv("SESSION_TYPE") == "redis" {
+		myRedisCache = c.createClientRedisCache()
 		c.Cache = myRedisCache
 	}
 
@@ -154,6 +156,13 @@ func (c *Celeritas) New(rootPath string) error {
 		CookieDomain:   c.config.cookie.domain,
 		SessionType:    c.config.sessionType,
 		DBPool:         c.DB.Pool,
+	}
+
+	switch c.config.sessionType {
+	case "redis":
+		sessionInfo.RedisPool = myRedisCache.Conn
+	case "mysql", "postgres", "mariadb", "postgresql":
+		sessionInfo.DBPool = c.DB.Pool
 	}
 
 	c.Session = sessionInfo.InitSession()
