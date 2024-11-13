@@ -155,7 +155,6 @@ func (c *Celeritas) New(rootPath string) error {
 		CookieName:     c.config.cookie.name,
 		CookieDomain:   c.config.cookie.domain,
 		SessionType:    c.config.sessionType,
-		DBPool:         c.DB.Pool,
 	}
 
 	switch c.config.sessionType {
@@ -168,12 +167,17 @@ func (c *Celeritas) New(rootPath string) error {
 	c.Session = sessionInfo.InitSession()
 	c.EncryptionKey = os.Getenv("KEY")
 
-	var views = jet.NewSet(
-		jet.NewOSFileSystemLoader(fmt.Sprintf("%s/views", rootPath)),
-		jet.InDevelopmentMode(),
-	)
-
-	c.JetViews = views
+	if c.Debug {
+		var views = jet.NewSet(
+			jet.NewOSFileSystemLoader(fmt.Sprintf("%s/views", rootPath)),
+			jet.InDevelopmentMode(),
+		)
+		c.JetViews = views
+	} else {
+		c.JetViews = jet.NewSet(
+			jet.NewOSFileSystemLoader(fmt.Sprintf("%s/views", rootPath)),
+		)
+	}
 
 	c.createRenderer()
 

@@ -10,6 +10,7 @@ import (
 
 	"github.com/CloudyKit/jet/v6"
 	"github.com/alexedwards/scs/v2"
+	"github.com/justinas/nosurf"
 )
 
 type Render struct {
@@ -35,14 +36,11 @@ type TemplateData struct {
 }
 
 func (c *Render) defaultData(td *TemplateData, r *http.Request) *TemplateData {
-	if td.ServerName == "" {
-		td.ServerName = c.ServerName
-	}
-	if td.Port == "" {
-		td.Port = c.Port
-	}
 	td.Secure = c.Secure
-	if c.Session != nil && c.Session.Exists(r.Context(), "userID") {
+	td.ServerName = c.ServerName
+	td.CSRFToken = nosurf.Token(r)
+	td.Port = c.Port
+	if c.Session.Exists(r.Context(), "userID") {
 		td.IsAuthenticated = true
 	}
 	return td
@@ -86,7 +84,11 @@ func (c *Render) GoPage(w http.ResponseWriter, r *http.Request, view string, dat
 }
 
 // JetPage renders a template using the Jet templating engine
-func (c *Render) JetPage(w http.ResponseWriter, r *http.Request, templateName string, variables, data interface{}) error {
+func (c *Render) JetPage(w http.ResponseWriter,
+	r *http.Request,
+	templateName string,
+	variables,
+	data interface{}) error {
 	var vars jet.VarMap
 
 	if variables == nil {
