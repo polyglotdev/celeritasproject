@@ -29,11 +29,11 @@ type Entry map[string]any
 // Has checks if a key exists in the cache.
 // It passes in a key and returns a boolean and an error.
 func (c *RedisCache) Has(key string) (bool, error) {
-	key = fmt.Sprintf("%s%s", c.Prefix, key)
+	key = fmt.Sprintf("%s:%s", c.Prefix, key)
 	conn := c.Conn.Get()
 	defer conn.Close()
 
-	exists, err := redis.Bool(conn.Do("EXISTS", c.Prefix+key))
+	exists, err := redis.Bool(conn.Do("EXISTS", key))
 	if err != nil {
 		return false, err
 	}
@@ -154,7 +154,7 @@ func (c *RedisCache) Empty() error {
 	}
 
 	for _, x := range keys {
-		err = c.Forget(x)
+		_, err := conn.Do("DEL", x)
 		if err != nil {
 			return err
 		}
