@@ -168,12 +168,16 @@ func (m *Mail) buildPlainTextMessage(msg Message) (string, error) {
 		return "", err
 	}
 
-	plainMessage := tpl.String()
+	formattedMessage := tpl.String()
+	formattedMessage, err = m.inlineCSS(formattedMessage)
+	if err != nil {
+		return "", err
+	}
 
-	return plainMessage, nil
+	return formattedMessage, nil
 }
 
-// inlineCSS takes html input as a string, and inlines css where possible
+// inlineCSS takes html input as a string, and inline css where possible
 func (m *Mail) inlineCSS(s string) (string, error) {
 	options := premailer.Options{
 		RemoveClasses:     false,
