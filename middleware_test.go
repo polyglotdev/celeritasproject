@@ -73,7 +73,8 @@ func TestCeleritas_SessionLoad(t *testing.T) {
 			}
 
 			// Verify log message
-			logOutput := cel.InfoLog.Writer().(*bytes.Buffer).String()
+			logBuffer := cel.InfoLog.Writer().(*bytes.Buffer)
+			logOutput := logBuffer.String()
 			if logOutput != tt.expectedLog {
 				ts.Errorf("SessionLoad() log = %v, want %v", logOutput, tt.expectedLog)
 			}
