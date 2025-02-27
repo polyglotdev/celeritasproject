@@ -1,0 +1,22 @@
+{
+  "cSpell.words": [
+    "alexedwards",
+    "asaskevich",
+    "errwrap",
+    "fastprinter",
+    "fatih",
+    "gertd",
+    "gomodule",
+    "govalidator",
+    "iancoleman",
+    "isatty",
+    "justinas",
+    "multierror",
+    "mysqlstore",
+    "nosurf",
+    "postgresstore",
+    "redigo",
+    "redisstore",
+    "strcase"
+  ]
+}
